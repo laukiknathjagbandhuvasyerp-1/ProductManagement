@@ -20,6 +20,9 @@ public class Product {
 
     private String productBrandName;
 
+    @Column(columnDefinition = "vector(384)")
+    private float[] embedding;
+
     @OneToMany(mappedBy = "product", cascade =CascadeType.ALL)
     private List<Variant> variantList;
 
