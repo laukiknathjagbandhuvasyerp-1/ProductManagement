@@ -43,9 +43,10 @@ public interface ProductRepo extends JpaRepository<Product,Long> {
     List<Product> findSuggestions(@Param("keyword") String keyword,@Param("limit") int limit);
 
 
-    @Query(value =" SELECT * FROM product_table ORDER BY product_embedding <=> :embedding LIMIT :limit" ,
+    @Query(value =" SELECT * FROM product_table ORDER BY product_embedding <=> CAST(:embedding AS vector) LIMIT :limit" ,
             nativeQuery = true)
-    List<Product> findSimilarProducts(@Param("embedding") String embedding , @Param("limit") int limit);
+    List<Product> findSimilarProducts(@Param("embedding") String embedding ,
+                                      @Param("limit") int limit);
 
 
 }

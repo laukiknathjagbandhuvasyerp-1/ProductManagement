@@ -15,7 +15,7 @@ public interface VariantRepo extends JpaRepository<Variant,Long> {
             "FROM product_variant v " +
             "JOIN product_table p ON " +
             "v.product_id = p.product_id " +
-            "ORDER BY v.variant_embedding <=> :embedding " +
+            "ORDER BY v.variant_embedding <=> CAST(:embedding AS vector) " +
             "LIMIT :limit",nativeQuery = true)
     List<Object[]> findSimilarVariants(@Param("embedding")String embedding,@Param("limit") int limit);
 
