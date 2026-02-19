@@ -2,6 +2,7 @@ package org.example.product.controller;
 
 import org.example.product.model.Product;
 import org.example.product.service.ProductService;
+import org.example.product.service.SearchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Controller;
@@ -19,6 +20,9 @@ public class ProductController {
     @Autowired
     private ProductService productService;
 
+    @Autowired
+    private SearchService searchService;
+
     @GetMapping("/list")
     public String showProductPage(){
         return "product-list";
@@ -35,6 +39,12 @@ public class ProductController {
     @ResponseBody
     public List<Product> getSuggestions(@RequestParam String p){
         return productService.findSuggestions(p,10);
+    }
+
+    @GetMapping("/ajax/vector-search")
+    @ResponseBody
+    public List<Object> vectorSearch(@RequestParam String q){
+        return searchService.searchAll(q);
     }
 
 }

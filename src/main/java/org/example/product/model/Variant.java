@@ -6,16 +6,17 @@ import lombok.Data;
 
 @Entity
 @Data
-@Table(name = "variants")
+@Table(name = "product_variant")
 public class Variant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long variantId;
+    private Long productVariantId;
 
-    private String variantName;
+    private String productVariantName;
 
-    private Integer variantQuantity;
+    @Column(columnDefinition = "vector(384)")
+    private float[] variantEmbedding;
 
     @ManyToOne
     @JoinColumn(name = "product_id" , referencedColumnName = "productId")

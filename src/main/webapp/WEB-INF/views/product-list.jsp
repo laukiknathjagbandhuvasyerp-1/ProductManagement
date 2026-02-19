@@ -32,6 +32,29 @@
             color: #333;
         }
 
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 10px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: #f0f0f0;
+            border: none;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .tab-btn.active {
+            background: #007bff;
+            color: white;
+        }
+
         /* Search box with dropdown */
         .search-container {
             position: relative;
@@ -102,10 +125,6 @@
             margin-top: 4px;
         }
 
-        .dropdown-item .item-info span {
-            margin-right: 10px;
-        }
-
         .loading-dropdown {
             padding: 10px;
             text-align: center;
@@ -133,6 +152,23 @@
 
         tr:hover {
             background: #f5f5f5;
+        }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .badge.product {
+            background: #28a745;
+            color: white;
+        }
+
+        .badge.variant {
+            background: #ffc107;
+            color: black;
         }
 
         /* Action buttons */
@@ -168,6 +204,7 @@
             justify-content: center;
             align-items: center;
             gap: 10px;
+            margin-top: 20px;
         }
 
         .pagination button {
@@ -207,29 +244,33 @@
 <div class="container">
     <h2>🔍 Product Search</h2>
 
-    <!-- Search Box with Dropdown - FIXED -->
+    <!-- Tabs -->
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('normal')">Normal Search</button>
+        <button class="tab-btn" onclick="switchTab('vector')">Vector Search (AI)</button>
+    </div>
+
+    <!-- Search Box -->
     <div class="search-container">
         <div class="search-box">
             <input type="text" id="searchInput" placeholder="Search products..." autofocus>
-            <button onclick="searchProducts(1)">Search</button>
+            <button onclick="handleSearch()">Search</button>
         </div>
-
-        <!-- Dropdown for suggestions -->
         <div id="dropdown" class="dropdown"></div>
     </div>
 
     <!-- Loading -->
     <div id="loading" class="loading">Loading...</div>
 
-    <!-- Product Table -->
+    <!-- Results Table -->
     <table id="productTable">
-        <thead>
+        <thead id="tableHeader">
             <tr>
+                <th>Type</th>
                 <th>ID</th>
-                <th>Product Name</th>
-                <th>Description</th>
+                <th>Name</th>
                 <th>Brand</th>
-                <th>Action</th>
+                <th>Details</th>
             </tr>
         </thead>
         <tbody id="tableBody">
@@ -239,8 +280,8 @@
         </tbody>
     </table>
 
-    <!-- Pagination -->
-    <div class="pagination">
+    <!-- Pagination (for normal search) -->
+    <div id="pagination" class="pagination" style="display: none;">
         <button id="prevBtn" onclick="changePage(-1)" disabled>Previous</button>
         <span id="pageInfo">Page 1 of 1</span>
         <button id="nextBtn" onclick="changePage(1)" disabled>Next</button>
@@ -251,14 +292,34 @@
     let currentPage = 1;
     let totalPages = 1;
     let searchTimeout;
+    let currentTab = 'normal';
 
     const searchInput = document.getElementById('searchInput');
     const dropdown = document.getElementById('dropdown');
 
-    // Input event for autocomplete
-    searchInput.addEventListener('input', function(e) {
-        const searchTerm = e.target.value.trim();
+    // Tab switching
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
 
+        // Clear and focus
+        searchInput.value = '';
+        document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" class="no-data">Enter search term to find products</td></tr>';
+        document.getElementById('pagination').style.display = tab === 'normal' ? 'flex' : 'none';
+        searchInput.focus();
+
+        // Hide dropdown
+        dropdown.style.display = 'none';
+    }
+
+    // Input event for autocomplete (only for normal search)
+    searchInput.addEventListener('input', function(e) {
+        if (currentTab !== 'normal') return;
+
+        const searchTerm = e.target.value.trim();
         clearTimeout(searchTimeout);
 
         if(searchTerm.length < 2) {
@@ -281,13 +342,13 @@
     // Enter key event
     searchInput.addEventListener('keypress', function(e) {
         if(e.key === 'Enter') {
-            searchProducts(1);
+            handleSearch();
         }
     });
 
     // Fetch suggestions from server
     function fetchSuggestions(searchTerm) {
-        const url = `/product/ajax/products/suggest?p=${encodeURIComponent(searchTerm)}`;
+        const url = `/product/ajax/products/suggest?q=${encodeURIComponent(searchTerm)}`;
 
         dropdown.innerHTML = '<div class="loading-dropdown">Loading suggestions...</div>';
         dropdown.style.display = 'block';
@@ -315,13 +376,8 @@
         products.forEach(p => {
             const highlightedName = p.productName.replace(regex, '<strong>$1</strong>');
 
-            // Escape single quotes for onclick
-            const safeName = p.productName.replace(/'/g, "\\'");
-            const safeDesc = (p.productDescription || '').replace(/'/g, "\\'");
-            const safeBrand = (p.productBrandName || '').replace(/'/g, "\\'");
-
             html += `
-                <div class="dropdown-item" onclick="addToTable(${p.productId}, '${safeName}', '${safeDesc}', '${safeBrand}')">
+                <div class="dropdown-item" onclick="selectSuggestion(${p.productId}, '${p.productName.replace(/'/g, "\\'")}')">
                     <div>${highlightedName}</div>
                     <div class="item-info">
                         <span>🏷️ ${p.productBrandName || 'No Brand'}</span>
@@ -334,110 +390,72 @@
         dropdown.innerHTML = html;
     }
 
-    // Add product to table
-    function addToTable(id, name, description, brand) {
-        // Check if already in table
-        const existingRows = document.querySelectorAll('#tableBody tr');
-        for(let row of existingRows) {
-            if(row.cells && row.cells[0] && row.cells[0].innerText == id) {
-                alert('Product already in table!');
-                dropdown.style.display = 'none';
-                searchInput.value = '';
-                return;
-            }
-        }
-
-        // Add new row
-        const tbody = document.getElementById('tableBody');
-
-        // Remove "no data" message if present
-        if(tbody.children.length === 1 && tbody.children[0].classList.contains('no-data')) {
-            tbody.innerHTML = '';
-        }
-
-        const newRow = document.createElement('tr');
-        newRow.innerHTML = `
-            <td>${id}</td>
-            <td>${name}</td>
-            <td>${description || '-'}</td>
-            <td>${brand || '-'}</td>
-            <td><button class="remove-btn" onclick="removeFromTable(this)">Remove</button></td>
-        `;
-
-        tbody.appendChild(newRow);
-
-        // Hide dropdown and clear input
+    function selectSuggestion(id, name) {
+        searchInput.value = name;
         dropdown.style.display = 'none';
-        searchInput.value = '';
-
-        // Update pagination visibility
-        updatePaginationVisibility();
+        handleSearch();
     }
 
-    // Remove product from table
-    function removeFromTable(btn) {
-        const row = btn.closest('tr');
-        row.remove();
-
-        // Show "no data" message if table is empty
-        const tbody = document.getElementById('tableBody');
-        if(tbody.children.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" class="no-data">No products added yet</td></tr>';
-        }
-
-        updatePaginationVisibility();
-    }
-
-    // Show/hide pagination based on table content
-    function updatePaginationVisibility() {
-        const tbody = document.getElementById('tableBody');
-        const pagination = document.querySelector('.pagination');
-
-        if(tbody.children.length === 1 && tbody.children[0].classList.contains('no-data')) {
-            pagination.style.display = 'none';
+    // Main search handler
+    function handleSearch() {
+        if (currentTab === 'normal') {
+            normalSearch(1);
         } else {
-            pagination.style.display = 'flex';
+            vectorSearch();
         }
     }
 
-    // Search products
-    function searchProducts(page) {
-        let searchTerm = document.getElementById('searchInput').value.trim();
+    // Normal search (with pagination)
+    function normalSearch(page) {
+        let searchTerm = searchInput.value.trim();
 
         document.getElementById('loading').style.display = 'block';
-        document.getElementById('tableBody').innerHTML = '';
 
         let url = `/product/ajax/products/search?page=${page}`;
-        if(searchTerm){
-            url += `&p=${encodeURIComponent(searchTerm)}` ;
+        if(searchTerm) {
+            url += `&p=${encodeURIComponent(searchTerm)}`;
         }
 
         fetch(url)
-            .then(res => {
-                if(!res.ok) throw new Error('Error');
-                return res.json();
-            })
+            .then(res => res.json())
             .then(data => {
                 document.getElementById('loading').style.display = 'none';
 
                 currentPage = data.number + 1;
                 totalPages = data.totalPages;
 
-                renderTable(data.content);
+                renderNormalResults(data.content);
                 updatePagination();
-
-                console.log(`Found ${data.totalElements} products`);
             })
             .catch(err => {
                 console.error(err);
                 document.getElementById('loading').style.display = 'none';
-                document.getElementById('tableBody').innerHTML =
-                    '<tr><td colspan="5" class="no-data">Error loading products</td></tr>';
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" class="no-data">Error loading products</td></tr>';
             });
     }
 
-    // Render table
-    function renderTable(products) {
+    // Vector search (AI)
+    function vectorSearch() {
+        let searchTerm = searchInput.value.trim();
+        if (!searchTerm) return;
+
+        document.getElementById('loading').style.display = 'block';
+
+        fetch(`/product/ajax/vector-search?q=${encodeURIComponent(searchTerm)}`)
+            .then(res => res.json())
+            .then(results => {
+                document.getElementById('loading').style.display = 'none';
+                renderVectorResults(results);
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('tableBody').innerHTML = '<tr><td colspan="5" class="no-data">Error loading results</td></tr>';
+            });
+    }
+
+    // Render normal search results
+    function renderNormalResults(products) {
         let tbody = document.getElementById('tableBody');
 
         if(!products || products.length === 0) {
@@ -448,14 +466,51 @@
         let html = '';
         products.forEach(p => {
             html += `<tr>
+                <td><span class="badge product">PRODUCT</span></td>
                 <td>${p.productId}</td>
                 <td>${p.productName || '-'}</td>
-                <td>${p.productDescription || '-'}</td>
                 <td>${p.productBrandName || '-'}</td>
-                <td><button class="add-btn" onclick="addToTable(${p.productId}, '${p.productName.replace(/'/g, "\\'")}', '${(p.productDescription || '').replace(/'/g, "\\'")}', '${(p.productBrandName || '').replace(/'/g, "\\'")}')">Add</button></td>
+                <td>${p.productDescription || '-'}</td>
             </tr>`;
         });
+        tbody.innerHTML = html;
+    }
 
+    // Render vector search results
+    function renderVectorResults(results) {
+        let tbody = document.getElementById('tableBody');
+
+        if(!results || results.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="5" class="no-data">No results found</td></tr>';
+            return;
+        }
+
+        let html = '';
+        results.forEach(item => {
+            // Check if it's a Product or Variant
+            if (item.productId && !item.variantId) {  // Product object
+                html += `<tr>
+                    <td><span class="badge product">PRODUCT</span></td>
+                    <td>${item.productId}</td>
+                    <td>${item.productName || '-'}</td>
+                    <td>${item.productBrandName || '-'}</td>
+                    <td>${item.productDescription || '-'}</td>
+                </tr>`;
+            } else {  // Variant object (from array)
+                // Variant result is [Variant, productName, brandName]
+                let variant = item[0];
+                let productName = item[1] || '';
+                let brandName = item[2] || '';
+
+                html += `<tr>
+                    <td><span class="badge variant">VARIANT</span></td>
+                    <td>${variant.variantId || ''}</td>
+                    <td>${variant.variantName || '-'} (${productName})</td>
+                    <td>${brandName}</td>
+                    <td>Product ID: ${variant.productId || ''}</td>
+                </tr>`;
+            }
+        });
         tbody.innerHTML = html;
     }
 
@@ -463,7 +518,7 @@
     function changePage(delta) {
         let newPage = currentPage + delta;
         if(newPage >= 1 && newPage <= totalPages) {
-            searchProducts(newPage);
+            normalSearch(newPage);
         }
     }
 
@@ -472,6 +527,7 @@
         document.getElementById('pageInfo').innerText = `Page ${currentPage} of ${totalPages}`;
         document.getElementById('prevBtn').disabled = (currentPage <= 1);
         document.getElementById('nextBtn').disabled = (currentPage >= totalPages);
+        document.getElementById('pagination').style.display = 'flex';
     }
 </script>
 

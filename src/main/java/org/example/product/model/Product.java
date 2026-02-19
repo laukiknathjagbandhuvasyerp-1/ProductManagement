@@ -7,7 +7,7 @@ import java.util.List;
 
 @Entity
 @Data
-@Table(name = "product")
+@Table(name = "product_table")
 public class Product {
 
     @Id
@@ -21,7 +21,7 @@ public class Product {
     private String productBrandName;
 
     @Column(columnDefinition = "vector(384)")
-    private float[] embedding;
+    private float[] productEmbedding;
 
     @OneToMany(mappedBy = "product", cascade =CascadeType.ALL)
     private List<Variant> variantList;
