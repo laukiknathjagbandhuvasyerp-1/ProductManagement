@@ -3,6 +3,7 @@ package org.example.product.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
+import com.pgvector.PGvector;
 
 @Entity
 @Data

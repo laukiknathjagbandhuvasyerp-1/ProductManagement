@@ -7,6 +7,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface VariantRepo extends JpaRepository<Variant,Long> {
@@ -17,6 +18,7 @@ public interface VariantRepo extends JpaRepository<Variant,Long> {
             "v.product_id = p.product_id " +
             "ORDER BY v.variant_embedding <=> CAST(:embedding AS vector) " +
             "LIMIT :limit",nativeQuery = true)
-    List<Object[]> findSimilarVariants(@Param("embedding")String embedding,@Param("limit") int limit);
+
+    List<Map<String,String>> findSimilarVariants(@Param("embedding")String embedding, @Param("limit") int limit);
 
 }

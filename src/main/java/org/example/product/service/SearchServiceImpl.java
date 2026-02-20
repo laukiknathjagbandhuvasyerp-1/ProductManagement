@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class SearchServiceImpl implements SearchService{
@@ -24,11 +25,11 @@ public class SearchServiceImpl implements SearchService{
     @Override
     public List<Object> searchAll(String query) {
 
-        String vectorStr = vectorSearchService.getVectorString(query);
+        String vectorStr =vectorSearchService.getVectorString(query) ;
 
-        List<Product> products = productRepo.findSimilarProducts(vectorStr,10);
+        List<Map<String,String>> products = productRepo.findSimilarProducts(vectorStr,10);
 
-        List<Object[]> variants = variantRepo.findSimilarVariants(vectorStr,10);
+        List<Map<String,String>> variants = variantRepo.findSimilarVariants(vectorStr,10);
 
         List<Object> result = new ArrayList<>();
         result.addAll(products);

@@ -348,7 +348,7 @@
 
     // Fetch suggestions from server
     function fetchSuggestions(searchTerm) {
-        const url = `/product/ajax/products/suggest?q=${encodeURIComponent(searchTerm)}`;
+        const url = `/product/ajax/products/suggest?p=${encodeURIComponent(searchTerm)}`;
 
         dropdown.innerHTML = '<div class="loading-dropdown">Loading suggestions...</div>';
         dropdown.style.display = 'block';
@@ -434,7 +434,7 @@
             });
     }
 
-    // Vector search (AI)
+    // Vector search (AI) - FIXED for Map return type
     function vectorSearch() {
         let searchTerm = searchInput.value.trim();
         if (!searchTerm) return;
@@ -444,6 +444,7 @@
         fetch(`/product/ajax/vector-search?q=${encodeURIComponent(searchTerm)}`)
             .then(res => res.json())
             .then(results => {
+                console.log("🔥 Results from server:", results);
                 document.getElementById('loading').style.display = 'none';
                 renderVectorResults(results);
             })
@@ -467,7 +468,7 @@
         products.forEach(p => {
             html += `<tr>
                 <td><span class="badge product">PRODUCT</span></td>
-                <td>${p.productId}</td>
+                <td>${p.productId || ''}</td>
                 <td>${p.productName || '-'}</td>
                 <td>${p.productBrandName || '-'}</td>
                 <td>${p.productDescription || '-'}</td>
@@ -476,7 +477,7 @@
         tbody.innerHTML = html;
     }
 
-    // Render vector search results
+    // 🔥 FIXED: Render vector search results for Map return type
     function renderVectorResults(results) {
         let tbody = document.getElementById('tableBody');
 
@@ -487,30 +488,31 @@
 
         let html = '';
         results.forEach(item => {
-            // Check if it's a Product or Variant
-            if (item.productId && !item.variantId) {  // Product object
+            // Skip if item is null/undefined
+            if (!item) return;
+
+            // Check if it's from product table (has product_id but no product_variant_id)
+            if (item.product_id && !item.product_variant_id) {
                 html += `<tr>
                     <td><span class="badge product">PRODUCT</span></td>
-                    <td>${item.productId}</td>
-                    <td>${item.productName || '-'}</td>
-                    <td>${item.productBrandName || '-'}</td>
-                    <td>${item.productDescription || '-'}</td>
+                    <td>${item.product_id || ''}</td>
+                    <td>${item.product_name || '-'}</td>
+                    <td>${item.product_brand_name || '-'}</td>
+                    <td>${item.product_description || '-'}</td>
                 </tr>`;
-            } else {  // Variant object (from array)
-                // Variant result is [Variant, productName, brandName]
-                let variant = item[0];
-                let productName = item[1] || '';
-                let brandName = item[2] || '';
-
+            }
+            // Check if it's from variant table (has product_variant_id)
+            else if (item.product_variant_id) {
                 html += `<tr>
                     <td><span class="badge variant">VARIANT</span></td>
-                    <td>${variant.variantId || ''}</td>
-                    <td>${variant.variantName || '-'} (${productName})</td>
-                    <td>${brandName}</td>
-                    <td>Product ID: ${variant.productId || ''}</td>
+                    <td>${item.product_variant_id || ''}</td>
+                    <td>${item.product_variant_name || '-'} (${item.product_name || ''})</td>
+                    <td>${item.product_brand_name || ''}</td>
+                    <td>Product ID: ${item.product_id || ''}</td>
                 </tr>`;
             }
         });
+
         tbody.innerHTML = html;
     }
 

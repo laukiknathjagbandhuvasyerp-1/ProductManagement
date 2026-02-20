@@ -10,17 +10,18 @@ import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
+import java.util.Map;
 
 @Repository
 public interface ProductRepo extends JpaRepository<Product,Long> {
 
 
-    @Query(value = "SELECT * FROM product WHERE " +
+    @Query(value = "SELECT * FROM product_table WHERE " +
             "LOWER(product_name) LIKE LOWER(CONCAT('%', :productsearch,'%')) OR " +
             "LOWER(product_description) LIKE LOWER(CONCAT('%', :productsearch,'%')) OR " +
             "LOWER(product_brand_name) LIKE LOWER(CONCAT('%', :productsearch,'%'))",
 
-            countQuery = "SELECT COUNT(*) FROM product WHERE "+
+            countQuery = "SELECT COUNT(*) FROM product_table WHERE "+
             "LOWER(product_name) LIKE LOWER(CONCAT('%', :productsearch,'%')) OR "+
             "LOWER(product_description) LIKE LOWER(CONCAT('%', :productsearch,'%')) OR " +
             "LOWER(product_brand_name) LIKE LOWER(CONCAT('%', :productsearch,'%'))"
@@ -29,7 +30,7 @@ public interface ProductRepo extends JpaRepository<Product,Long> {
     Page<Product> searchProduct(@Param("productsearch") String product, Pageable pageable);
 
 
-    @Query(value = "SELECT * FROM product WHERE " +
+    @Query(value = "SELECT * FROM product_table WHERE " +
             "LOWER(product_name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(product_brand_name) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
             "ORDER BY " +
@@ -43,10 +44,15 @@ public interface ProductRepo extends JpaRepository<Product,Long> {
     List<Product> findSuggestions(@Param("keyword") String keyword,@Param("limit") int limit);
 
 
-    @Query(value =" SELECT * FROM product_table ORDER BY product_embedding <=> CAST(:embedding AS vector) LIMIT :limit" ,
+    @Query(value = """
+
+          SELECT *
+                 FROM product_table
+                 ORDER BY product_embedding <=> CAST(:embedding AS vector)
+                 LIMIT :limit;
+    """,
             nativeQuery = true)
-    List<Product> findSimilarProducts(@Param("embedding") String embedding ,
-                                      @Param("limit") int limit);
+    List<Map<String,String>> findSimilarProducts(@Param("embedding") String embedding,@Param("limit") int limit);
 
 
 }
