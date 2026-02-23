@@ -1,5 +1,7 @@
 package org.example.product.controller;
 
+import org.example.product.dto.ProductSearchDTO;
+import org.example.product.dto.SearchResultDTO;
 import org.example.product.model.Product;
 import org.example.product.service.ProductService;
 import org.example.product.service.SearchService;
@@ -46,5 +48,18 @@ public class ProductController {
     public List<Object> vectorSearch(@RequestParam String q){
         return searchService.searchAll(q);
     }
+
+    @GetMapping("/vector-search")
+    public String showVector(){
+        return "vector-search";
+    }
+
+    @GetMapping("/ajax/search")
+    @ResponseBody
+    public List<SearchResultDTO> search(@RequestParam String q){
+        return searchService.searchAllProduct(q);
+    }
+
+
 
 }

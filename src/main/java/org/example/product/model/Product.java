@@ -24,7 +24,7 @@ public class Product {
     @Column(columnDefinition = "vector(384)")
     private float[] productEmbedding;
 
-    @OneToMany(mappedBy = "product", cascade =CascadeType.ALL)
+    @OneToMany(mappedBy = "product", cascade =CascadeType.ALL , fetch = FetchType.LAZY)
     private List<Variant> variantList;
 
 }

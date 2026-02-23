@@ -1,13 +1,12 @@
 package org.example.product.dto;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
+import lombok.Builder;
+import lombok.Getter;
 
-@Repository
-public interface SearchResultDTO {
+@Getter
+@Builder
+public class SearchResultDTO {
 
-    @Query(value = """
+    private String displayText;
 
-""")
 }
