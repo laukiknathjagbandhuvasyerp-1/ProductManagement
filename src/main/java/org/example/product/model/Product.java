@@ -1,14 +1,15 @@
 package org.example.product.model;
 
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Data;
-import com.pgvector.PGvector;
 
 import java.util.List;
 
 @Entity
 @Data
 @Table(name = "product_table")
+@Builder
 public class Product {
 
     @Id
@@ -24,7 +25,7 @@ public class Product {
     @Column(columnDefinition = "vector(384)")
     private float[] productEmbedding;
 
-    @OneToMany(mappedBy = "product", cascade =CascadeType.ALL , fetch = FetchType.LAZY)
-    private List<Variant> variantList;
+    @OneToMany(mappedBy = "product", cascade =CascadeType.ALL , fetch = FetchType.LAZY,orphanRemoval = true)
+    private List<ProductVariant> productVariantList;
 
 }

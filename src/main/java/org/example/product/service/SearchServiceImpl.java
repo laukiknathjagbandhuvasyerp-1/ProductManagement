@@ -30,34 +30,36 @@ public class SearchServiceImpl implements SearchService{
     @Autowired
     private VectorSearchService vectorSearchService;
 
-    @Override
-    public List<Object> searchAll(String query) {
-
-        String vectorStr =vectorSearchService.getVectorString(query) ;
-
-        List<Map<String,String>> products = productRepo.findSimilarProducts(vectorStr,10);
-
-        List<Map<String,String>> variants = variantRepo.findSimilarVariants(vectorStr,10);
-
-        List<Object> result = new ArrayList<>();
-        result.addAll(products);
-        result.addAll(variants);
-
-        return result;
-    }
+//    @Override
+//    public List<Object> searchAll(String query) {
+//
+//        String vectorStr =vectorSearchService.getVectorString(query) ;
+//
+//        List<Map<String,String>> products = productRepo.findSimilarProducts(vectorStr,10);
+//
+//        List<Map<String,String>> variants = variantRepo.findSimilarVariants(vectorStr,10);
+//
+//        List<Object> result = new ArrayList<>();
+//        result.addAll(products);
+//        result.addAll(variants);
+//
+//        return result;
+//    }
 
     @Override
     public List<SearchResultDTO> searchAllProduct(String query) {
 
         String vectorStr = vectorSearchService.getVectorString(query);
 
-        List<String> results = productSearchRepo.findSimilar(vectorStr,10);
+        List<Object[]> results = productSearchRepo.findSimilarProduct(vectorStr,10);
 
         return results.stream()
-                .map(text-> SearchResultDTO.builder()
-                        .displayText(text)
+                .map(row-> SearchResultDTO.builder()
+                        .productId(((Number)row[0]).longValue())
+                        .variantId(((Number)row[1]).longValue())
+                        .displayText((String) row[2])
                         .build())
-                        .toList();
+                .toList();
 
     }
 

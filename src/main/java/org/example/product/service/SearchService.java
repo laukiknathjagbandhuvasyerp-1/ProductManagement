@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface SearchService {
 
-    public List<Object> searchAll(String query);
+//    public List<Object> searchAll(String query);
 
     public List<SearchResultDTO> searchAllProduct(String query);
 

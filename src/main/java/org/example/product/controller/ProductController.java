@@ -30,24 +30,23 @@ public class ProductController {
         return "product-list";
     }
 
-    @GetMapping("/ajax/products/search")
-    @ResponseBody
-    public Page<Product> searchProduct(@RequestParam(required = false) String p,
-                                       @RequestParam(defaultValue = "1") int page){
-        return productService.searchProducts(p,page);
-    }
+//    @GetMapping("/ajax/products/search")
+//    @ResponseBody
+//    public Page<Product> searchProduct(@RequestParam(required = false) String p,@RequestParam(defaultValue = "1") int page){
+//        return productService.searchProducts(p,page);
+//    }
 
-    @GetMapping("/ajax/products/suggest")
-    @ResponseBody
-    public List<Product> getSuggestions(@RequestParam String p){
-        return productService.findSuggestions(p,10);
-    }
+//    @GetMapping("/ajax/products/suggest")
+//    @ResponseBody
+//    public List<Product> getSuggestions(@RequestParam String p){
+//        return productService.findSuggestions(p,10);
+//    }
 
-    @GetMapping("/ajax/vector-search")
-    @ResponseBody
-    public List<Object> vectorSearch(@RequestParam String q){
-        return searchService.searchAll(q);
-    }
+//    @GetMapping("/ajax/vector-search")
+//    @ResponseBody
+//    public List<Object> vectorSearch(@RequestParam String q){
+//        return searchService.searchAll(q);
+//    }
 
     @GetMapping("/vector-search")
     public String showVector(){
@@ -59,6 +58,8 @@ public class ProductController {
     public List<SearchResultDTO> search(@RequestParam String q){
         return searchService.searchAllProduct(q);
     }
+
+//    @GetMapping("")
 
 
 

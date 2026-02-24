@@ -1,18 +1,24 @@
 package org.example.product.model;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @Table(name = "product_search")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProductSearch {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private long searchId;
 
-    private long variantId;
+    private Long variantId;
 
     private long companyId;
 

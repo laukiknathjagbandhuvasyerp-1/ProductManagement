@@ -7,7 +7,9 @@ import java.util.List;
 
 public interface ProductService {
 
-    Page<Product> searchProducts(String product,int page);
+//    Page<Product> searchProducts(String product,int page);
+//
+//    List<Product> findSuggestions(String product,int limit);
 
-    List<Product> findSuggestions(String product,int limit);
+    Product createProduct(Product product);
 }

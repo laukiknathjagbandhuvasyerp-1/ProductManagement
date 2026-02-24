@@ -19,20 +19,33 @@ public class ProductServiceImpl implements ProductService{
     @Autowired
     private ProductRepo productRepo;
 
-    @Override
-    public Page<Product> searchProducts(String product, int page) {
-        Pageable pageable = PageRequest.of(page-1,PAGE_SIZE);
-        if(product == null || product.trim().isEmpty()){
-            return productRepo.findAll(pageable);
-        }
-        return productRepo.searchProduct(product.trim(),pageable);
-    }
+    @Autowired
+    private ProductSearchEntryService productSearchEntryService;
+
+//    @Override
+//    public Page<Product> searchProducts(String product, int page) {
+//        Pageable pageable = PageRequest.of(page-1,PAGE_SIZE);
+//        if(product == null || product.trim().isEmpty()){
+//            return productRepo.findAll(pageable);
+//        }
+//        return productRepo.searchProduct(product.trim(),pageable);
+//    }
+//
+//    @Override
+//    public List<Product> findSuggestions(String product, int limit) {
+//        if(product == null|| product.trim().isEmpty()){
+//            return Collections.emptyList();
+//        }
+//        return productRepo.findSuggestions(product.trim(),limit);
+//    }
 
     @Override
-    public List<Product> findSuggestions(String product, int limit) {
-        if(product == null|| product.trim().isEmpty()){
-            return Collections.emptyList();
-        }
-        return productRepo.findSuggestions(product.trim(),limit);
+    public Product createProduct(Product product) {
+
+        Product saveProduct = productRepo.save(product);
+
+        productSearchEntryService.addProductToSearch(saveProduct);
+
+        return saveProduct;
     }
 }

@@ -2,14 +2,12 @@ package org.example.product.dto;
 
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 
 @Data
 @Builder
-public class SearchResultDTO {
+public class ProductVariantCreateDTO {
 
-    private String displayText;
+    private String productVariantName;
     private Long productId;
-    private Long variantId;
 
 }
