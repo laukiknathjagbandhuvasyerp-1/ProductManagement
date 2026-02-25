@@ -2,9 +2,11 @@ package org.example.product.repo;
 
 import org.example.product.model.ProductSearch;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -24,4 +26,17 @@ public interface ProductSearchRepo extends JpaRepository<ProductSearch,Long> {
             LIMIT :limit """ , nativeQuery = true)
     List<Object[]> findSimilarProduct(@Param("embedding") String embedding,
                                     @Param("limit") int limit);
+
+    @Transactional
+    @Modifying
+    @Query(value = """
+DELETE FROM product_search WHERE variant_id = :variantId """,nativeQuery = true)
+    void deleteByVariantId(@Param("variantId") Long variantId);
+
+    @Transactional
+    @Modifying
+    @Query(value = """
+DELETE FROM product_search WHERE product_id = :productId """,nativeQuery = true)
+    void deleteByProductId(@Param("productId") Long productId);
+
 }

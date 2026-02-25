@@ -7,4 +7,7 @@ import org.example.product.model.ProductVariant;
 public interface VariantService {
 
     ProductVariantResponseDTO createProductVariant(ProductVariantCreateDTO productVariant);
+
+    void softDeleteVariant(Long productId);
+
 }

@@ -9,9 +9,8 @@ import java.util.List;
 
 public interface ProductService {
 
-//    Page<Product> searchProducts(String product,int page);
-//
-//    List<Product> findSuggestions(String product,int limit);
-
     ProductResponseDTO createProduct(ProductCreateDTO product);
+
+    void softDeleteProduct(Long productId);
+
 }

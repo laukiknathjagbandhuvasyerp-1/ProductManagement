@@ -22,29 +22,7 @@ public class SearchServiceImpl implements SearchService{
     private ProductSearchRepo productSearchRepo;
 
     @Autowired
-    private ProductRepo productRepo;
-
-    @Autowired
-    private VariantRepo variantRepo;
-
-    @Autowired
     private VectorSearchService vectorSearchService;
-
-//    @Override
-//    public List<Object> searchAll(String query) {
-//
-//        String vectorStr =vectorSearchService.getVectorString(query) ;
-//
-//        List<Map<String,String>> products = productRepo.findSimilarProducts(vectorStr,10);
-//
-//        List<Map<String,String>> variants = variantRepo.findSimilarVariants(vectorStr,10);
-//
-//        List<Object> result = new ArrayList<>();
-//        result.addAll(products);
-//        result.addAll(variants);
-//
-//        return result;
-//    }
 
     @Override
     public List<SearchResultDTO> searchAllProduct(String query) {

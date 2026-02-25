@@ -30,24 +30,6 @@ public class ProductController {
         return "product-list";
     }
 
-//    @GetMapping("/ajax/products/search")
-//    @ResponseBody
-//    public Page<Product> searchProduct(@RequestParam(required = false) String p,@RequestParam(defaultValue = "1") int page){
-//        return productService.searchProducts(p,page);
-//    }
-
-//    @GetMapping("/ajax/products/suggest")
-//    @ResponseBody
-//    public List<Product> getSuggestions(@RequestParam String p){
-//        return productService.findSuggestions(p,10);
-//    }
-
-//    @GetMapping("/ajax/vector-search")
-//    @ResponseBody
-//    public List<Object> vectorSearch(@RequestParam String q){
-//        return searchService.searchAll(q);
-//    }
-
     @GetMapping("/vector-search")
     public String showVector(){
         return "vector-search";
@@ -70,6 +52,21 @@ public class ProductController {
     public ProductVariantResponseDTO  createVariant(@RequestBody ProductVariantCreateDTO dto){
         return variantService.createProductVariant(dto);
     }
+
+    @PostMapping("/delete/{productId}")
+    @ResponseBody
+    public String deleteProduct (@PathVariable Long productId){
+        productService.softDeleteProduct(productId);
+        return "Product Deleted";
+    }
+
+    @PostMapping("/delete/variant/{variantId}")
+    @ResponseBody
+    public String deleteVariant (@PathVariable Long variantId){
+        variantService.softDeleteVariant(variantId);
+        return "Variant Deleted";
+    }
+
 
 
 

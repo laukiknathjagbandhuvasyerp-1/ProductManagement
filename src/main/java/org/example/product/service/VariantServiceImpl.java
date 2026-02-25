@@ -5,9 +5,11 @@ import org.example.product.dto.ProductVariantResponseDTO;
 import org.example.product.model.Product;
 import org.example.product.model.ProductVariant;
 import org.example.product.repo.ProductRepo;
+import org.example.product.repo.ProductSearchRepo;
 import org.example.product.repo.VariantRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VariantServiceImpl implements VariantService {
@@ -20,6 +22,9 @@ public class VariantServiceImpl implements VariantService {
 
     @Autowired
     private ProductSearchEntryService productSearchEntryService;
+
+    @Autowired
+    private ProductSearchRepo productSearchRepo;
 
     @Override
     public ProductVariantResponseDTO createProductVariant(ProductVariantCreateDTO dto) {
@@ -39,6 +44,19 @@ public class VariantServiceImpl implements VariantService {
                 .productId(product.getProductId())
                 .variantName(savedVariant.getProductVariantName())
                 .build();
+
+    }
+
+    @Transactional
+    @Override
+    public void softDeleteVariant(Long variantId) {
+
+        productSearchRepo.deleteByVariantId(variantId);
+
+        ProductVariant productVariant = variantRepo.findById(variantId).orElseThrow(()-> new RuntimeException("Variant Not Found"));
+
+        productVariant.setIsDeleted(true);
+        variantRepo.save(productVariant);
 
     }
 }

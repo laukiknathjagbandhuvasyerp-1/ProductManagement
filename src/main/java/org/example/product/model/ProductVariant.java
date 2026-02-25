@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Data
 @Table(name = "product_variant")
@@ -21,11 +23,15 @@ public class ProductVariant {
 
     private String productVariantName;
 
-//    @Column(columnDefinition = "vector(384)")
-//    private float[] variantEmbedding;
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean isDeleted = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id" , referencedColumnName = "productId")
     @JsonIgnore
     private Product product;
+
+    @OneToMany(mappedBy = "productVariant" , cascade = CascadeType.ALL)
+    private List<ProductSearch> productSearches;
 }

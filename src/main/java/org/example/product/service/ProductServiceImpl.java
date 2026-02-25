@@ -6,6 +6,7 @@ import org.example.product.dto.ProductVariantCreateDTO;
 import org.example.product.model.Product;
 import org.example.product.model.ProductVariant;
 import org.example.product.repo.ProductRepo;
+import org.example.product.repo.ProductSearchRepo;
 import org.example.product.repo.VariantRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -28,24 +29,10 @@ public class ProductServiceImpl implements ProductService{
     private VariantRepo variantRepo;
 
     @Autowired
-    private ProductSearchEntryService productSearchEntryService;
+    private ProductSearchRepo productSearchRepo;
 
-//    @Override
-//    public Page<Product> searchProducts(String product, int page) {
-//        Pageable pageable = PageRequest.of(page-1,PAGE_SIZE);
-//        if(product == null || product.trim().isEmpty()){
-//            return productRepo.findAll(pageable);
-//        }
-//        return productRepo.searchProduct(product.trim(),pageable);
-//    }
-//
-//    @Override
-//    public List<Product> findSuggestions(String product, int limit) {
-//        if(product == null|| product.trim().isEmpty()){
-//            return Collections.emptyList();
-//        }
-//        return productRepo.findSuggestions(product.trim(),limit);
-//    }
+    @Autowired
+    private ProductSearchEntryService productSearchEntryService;
 
     @Transactional
     @Override
@@ -59,7 +46,6 @@ public class ProductServiceImpl implements ProductService{
 
         Product savedProduct = productRepo.save(saveProduct);
 
-//        List<ProductVariant> savedVariants = new ArrayList<>();
 
         if (productCreateDTO.getVariants() != null && !productCreateDTO.getVariants().isEmpty()) {
             for (ProductVariantCreateDTO productVariantCreateDTO : productCreateDTO.getVariants()) {
@@ -69,12 +55,9 @@ public class ProductServiceImpl implements ProductService{
                         .build();
 
                 ProductVariant savedVariant = variantRepo.save(variant);
-//                savedVariants.add(savedVariant);
 
                 productSearchEntryService.addVariantsToSearch(savedVariant);
-
             }
-
         }
         else{
             ProductVariant defaultVariant = ProductVariant.builder()
@@ -91,5 +74,22 @@ public class ProductServiceImpl implements ProductService{
                 .productBrandName(savedProduct.getProductBrandName())
                 .productDescription(savedProduct.getProductDescription())
                 .build();
+    }
+
+    @Transactional
+    @Override
+    public void softDeleteProduct(Long productId) {
+
+        productSearchRepo.deleteByProductId(productId);
+
+        Product product = productRepo.findById(productId).orElseThrow(()-> new RuntimeException("Not Found Product"));
+
+        product.setIsDeleted(true);
+        productRepo.save(product);
+
+        for(ProductVariant productVariant : product.getProductVariantList()){
+            productVariant.setIsDeleted(true);
+            variantRepo.save(productVariant);
+        }
     }
 }

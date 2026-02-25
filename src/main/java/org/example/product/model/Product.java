@@ -26,8 +26,9 @@ public class Product {
 
     private String productBrandName;
 
-//    @Column(columnDefinition = "vector(384)")
-//    private float[] productEmbedding;
+    @Builder.Default
+    @Column(nullable = false)
+    private Boolean isDeleted = false;
 
     @OneToMany(mappedBy = "product", cascade =CascadeType.ALL , fetch = FetchType.LAZY,orphanRemoval = true)
     private List<ProductVariant> productVariantList;
