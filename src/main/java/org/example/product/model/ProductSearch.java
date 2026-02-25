@@ -32,8 +32,4 @@ public class ProductSearch {
     @JoinColumn(name="variant_id",nullable = false)
     private ProductVariant productVariant;
 
-    public Long getVariantId() {
-        return productVariant != null ? productVariant.getProductVariantId() : null;
-    }
-
 }

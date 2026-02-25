@@ -92,4 +92,30 @@ public class ProductServiceImpl implements ProductService{
             variantRepo.save(productVariant);
         }
     }
+
+    @Transactional
+    @Override
+    public List<ProductResponseDTO> createProducts(List<ProductCreateDTO> productDTOs) {
+
+        List<ProductResponseDTO> responses = new ArrayList<>();
+        List<String> errors = new ArrayList<>();
+
+        for (int i = 0; i < productDTOs.size(); i++) {
+            try {
+                ProductCreateDTO dto = productDTOs.get(i);
+                ProductResponseDTO response = createProduct(dto);  // Reuse existing method
+                responses.add(response);
+            } catch (Exception e) {
+                String error = "Product " + (i+1) + " (" + productDTOs.get(i).getProductName() + ") failed: " + e.getMessage();
+                errors.add(error);
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            System.out.println("⚠️ Some products failed: " + errors);
+        }
+
+        System.out.println("🎉 Total " + responses.size() + " products created successfully");
+        return responses;
+    }
 }

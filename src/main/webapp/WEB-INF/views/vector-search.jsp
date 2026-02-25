@@ -4,126 +4,130 @@
 <html>
 <head>
     <title>Vector Search</title>
-
-    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <!-- Select2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
     <style>
-        body { font-family: Arial; margin: 40px; }
-        .select2-container { width: 300px !important; }
-
-        table {
-            margin-top: 30px;
-            border-collapse: collapse;
-            width: 60%;
-        }
-
-        th, td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            background-color: #eee;
-        }
-
-        .remove-btn {
-            color: red;
-            cursor: pointer;
-            font-weight: bold;
-        }
+        body { margin: 20px; font-family: Arial; }
+        .select2 { width: 300px; }
+        table { margin-top: 20px; border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background: #f2f2f2; }
+        .delete { color: red; cursor: pointer; margin-right: 10px; }
+        .remove { color: gray; cursor: pointer; }
+        .toast { position: fixed; top: 20px; right: 20px; padding: 10px; background: green; color: white; display: none; }
+        .toast.error { background: red; }
     </style>
 </head>
-
 <body>
 
 <h2>Vector Search</h2>
 
-<select id="searchSelect" style="width: 300px;">
-    <option></option>
-</select>
+<select id="searchSelect" class="select2"></select>
 
-<h3>Selected Items</h3>
-
-<table id="selectedTable">
+<table id="itemsTable">
     <thead>
         <tr>
             <th>Product Details</th>
-            <th>Action</th>
+            <th>Actions</th>
         </tr>
     </thead>
     <tbody></tbody>
 </table>
 
+<div id="toast" class="toast"></div>
+
 <script>
 $(document).ready(function() {
 
-    // Initialize Select2
     $('#searchSelect').select2({
         placeholder: "Search products...",
-        allowClear : true,
+        minimumInputLength: 2,
         ajax: {
-            delay: 300,
-            url: "${pageContext.request.contextPath}/product/ajax/search",
+            url: '${pageContext.request.contextPath}/product/ajax/search',
             dataType: 'json',
             data: function(params) {
-                return { q: params.term }; // search query
+                return { q: params.term };
             },
             processResults: function(data) {
-                // Convert API results to Select2 format
                 return {
                     results: data.map(item => ({
-                        id: item.displayText,
-                        text: item.displayText
+                        id: item.variantId,
+                        text: item.displayText,
+                        variantId: item.variantId,
+                        productId: item.productId
                     }))
                 };
             }
         }
     });
 
-    // On select, add to table
     $('#searchSelect').on('select2:select', function(e) {
-        const text = e.params.data.text;
-        addToTable(text);
-
-        // Reset select box
+        const data = e.params.data;
+        addRow(data.text, data.variantId, data.productId);
         $('#searchSelect').val(null).trigger('change');
     });
 });
 
-// 🔥 Add Row To Table (with duplicate prevention)
-function addToTable(text) {
+// Add row
+function addRow(text, variantId, productId) {
+    const tbody = $('#itemsTable tbody');
 
-    const tableBody = document
-        .getElementById("selectedTable")
-        .getElementsByTagName("tbody")[0];
+    // Check duplicate
+    let exists = false;
+    tbody.find('tr').each(function() {
+        if ($(this).data('variant-id') == variantId) exists = true;
+    });
 
-    // Prevent duplicate
-    const rows = tableBody.getElementsByTagName("tr");
-    for (let i = 0; i < rows.length; i++) {
-        if (rows[i].cells[0].innerText === text) {
-            alert("Already added!");
-            return;
-        }
+    if (exists) {
+        showToast('Already added!', 'error');
+        return;
     }
 
-    const newRow = tableBody.insertRow();
-    const cell1 = newRow.insertCell(0);
-    const cell2 = newRow.insertCell(1);
+    const row = $('<tr>').data('variant-id', variantId).data('product-id', productId);
+    row.append('<td>' + text + '</td>');
+    // 🔥 SINGLE DELETE BUTTON - Only variant delete
+    row.append('<td>' +
+        '<span class="delete" onclick="deleteItem(this, ' + variantId + ')">🗑️ Delete</span>' +
+        '<span class="remove" onclick="removeItem(this)">❌ Remove</span>' +
+        '</td>');
 
-    cell1.innerText = text;
-    cell2.innerHTML = "<span class='remove-btn' onclick='removeRow(this)'>X</span>";
+    tbody.append(row);
+    showToast('Added to list');
 }
 
-// 🔥 Remove Row
-function removeRow(btn) {
-    const row = btn.parentNode.parentNode;
-    row.parentNode.removeChild(row);
+// 🔥 Delete variant only
+function deleteItem(btn, variantId) {
+    if (!confirm('Delete this item?')) return;
+
+    $.ajax({
+        url: '${pageContext.request.contextPath}/product/delete/variant/' + variantId,
+        type: 'POST',
+        success: function() {
+            $(btn).closest('tr').remove();
+            showToast('Deleted successfully');
+        },
+        error: function() {
+            showToast('Delete failed', 'error');
+        }
+    });
+}
+
+// Remove from list only
+function removeItem(btn) {
+    if (confirm('Remove from list only?')) {
+        $(btn).closest('tr').remove();
+        showToast('Removed from list');
+    }
+}
+
+// Toast notification
+function showToast(msg, type) {
+    const toast = $('#toast');
+    toast.text(msg).removeClass('error');
+    if (type === 'error') toast.addClass('error');
+    toast.show();
+    setTimeout(() => toast.hide(), 2000);
 }
 </script>
 

@@ -51,12 +51,32 @@ public class VariantServiceImpl implements VariantService {
     @Override
     public void softDeleteVariant(Long variantId) {
 
-        productSearchRepo.deleteByVariantId(variantId);
-
         ProductVariant productVariant = variantRepo.findById(variantId).orElseThrow(()-> new RuntimeException("Variant Not Found"));
+
+        Long productId = productVariant.getProduct().getProductId();
+
+        productSearchRepo.deleteByVariantId(variantId);
 
         productVariant.setIsDeleted(true);
         variantRepo.save(productVariant);
 
+        checkAndUpdateProductStatus(productId);
+
+    }
+
+    private void checkAndUpdateProductStatus(Long productId) {
+        Product product = productRepo.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product Not Found"));
+
+        // Count active variants (isDeleted = false)
+        long activeVariantsCount = product.getProductVariantList().stream()
+                .filter(v -> !v.getIsDeleted())
+                .count();
+
+        // If no active variants left, soft delete the product
+        if (activeVariantsCount == 0) {
+            product.setIsDeleted(true);
+            productRepo.save(product);
+        }
     }
 }

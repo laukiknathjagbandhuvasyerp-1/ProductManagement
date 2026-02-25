@@ -13,4 +13,6 @@ public interface ProductService {
 
     void softDeleteProduct(Long productId);
 
+    List<ProductResponseDTO> createProducts(List<ProductCreateDTO> productDTOs);
+
 }

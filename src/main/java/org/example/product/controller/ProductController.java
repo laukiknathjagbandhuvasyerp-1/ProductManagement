@@ -68,6 +68,13 @@ public class ProductController {
     }
 
 
+    @PostMapping("/create/bulk")
+    @ResponseBody
+    public List<ProductResponseDTO> createProducts(@RequestBody ProductBulkCreateDTO bulkDTO) {
+        return productService.createProducts(bulkDTO.getProducts());
+    }
+
+
 
 
 }

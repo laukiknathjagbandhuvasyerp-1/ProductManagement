@@ -44,7 +44,10 @@ public class ProductSearchEntryService {
     }
 
     public void addVariantsToSearch(ProductVariant productVariant){
-        String productDetails = productVariant.getProduct().getProductName()+" "+productVariant.getProductVariantName();
+        Product product = productVariant.getProduct();
+        String productDetails = product.getProductName()+" "+
+                                productVariant.getProductVariantName();
+
         saveProductSearch(productVariant,productDetails);
     }
 
