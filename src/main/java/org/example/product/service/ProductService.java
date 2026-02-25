@@ -1,5 +1,7 @@
 package org.example.product.service;
 
+import org.example.product.dto.ProductCreateDTO;
+import org.example.product.dto.ProductResponseDTO;
 import org.example.product.model.Product;
 import org.springframework.data.domain.Page;
 
@@ -11,5 +13,5 @@ public interface ProductService {
 //
 //    List<Product> findSuggestions(String product,int limit);
 
-    Product createProduct(Product product);
+    ProductResponseDTO createProduct(ProductCreateDTO product);
 }

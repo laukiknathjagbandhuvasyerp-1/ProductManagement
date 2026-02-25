@@ -36,15 +36,17 @@ public class ProductSearchEntryService {
 //    }
 
 
-    private void saveProductSearch(Product product,ProductVariant productVariant,String productDetail){
+    private void saveProductSearch(ProductVariant productVariant,String productDetail){
 
         String vectorStr =  vectorSearchService.getVectorString(productDetail);
         float[] embedding = convert(vectorStr);
+
         ProductSearch search = ProductSearch.builder()
-                .productId(product.getProductId())
-                .variantId(productVariant!=null ? productVariant.getProductVariantId():null)
+                .productId(productVariant.getProduct().getProductId())
+                .productVariant(productVariant)
                 .productDetails(productDetail)
                 .searchEmbedding(embedding)
+                .companyId(0L)
                 .build();
 
         productSearchRepo.save(search);
@@ -60,14 +62,14 @@ public class ProductSearchEntryService {
         return arr;
     }
 
-    public void addProductToSearch(Product product){
-        String productDetails = product.getProductName();
-        saveProductSearch(product,null,productDetails);
-    }
+//    public void addProductToSearch(Product product){
+//        String productDetails = product.getProductName();
+//        saveProductSearch(product,null,productDetails);
+//    }
 
     public void addVariantsToSearch(ProductVariant productVariant){
         String productDetails = productVariant.getProduct().getProductName()+" "+productVariant.getProductVariantName();
-        saveProductSearch(productVariant.getProduct(),productVariant,productDetails);
+        saveProductSearch(productVariant,productDetails);
     }
 
 }

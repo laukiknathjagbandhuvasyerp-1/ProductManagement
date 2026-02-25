@@ -1,10 +1,10 @@
 package org.example.product.dto;
 
-import lombok.Builder;
-import lombok.Data;
-import lombok.Getter;
+import lombok.*;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class SearchResultDTO {
 

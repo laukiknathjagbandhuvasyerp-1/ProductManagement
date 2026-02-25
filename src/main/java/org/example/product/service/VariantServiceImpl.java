@@ -1,5 +1,7 @@
 package org.example.product.service;
 
+import org.example.product.dto.ProductVariantCreateDTO;
+import org.example.product.dto.ProductVariantResponseDTO;
 import org.example.product.model.Product;
 import org.example.product.model.ProductVariant;
 import org.example.product.repo.ProductRepo;
@@ -20,16 +22,23 @@ public class VariantServiceImpl implements VariantService {
     private ProductSearchEntryService productSearchEntryService;
 
     @Override
-    public ProductVariant createProductVariant(Long productId, ProductVariant productVariant) {
+    public ProductVariantResponseDTO createProductVariant(ProductVariantCreateDTO dto) {
 
-        Product product = productRepo.findById(productId).orElseThrow(()-> new RuntimeException("Product Not Found"));
+        Product product = productRepo.findById(dto.getProductId()).orElseThrow(()-> new RuntimeException("Product Not Found"));
 
+        ProductVariant productVariant = new ProductVariant();
+        productVariant.setProductVariantName(dto.getProductVariantName());
         productVariant.setProduct(product);
 
         ProductVariant savedVariant = variantRepo.save(productVariant);
 
         productSearchEntryService.addVariantsToSearch(savedVariant);
 
-        return savedVariant;
+        return ProductVariantResponseDTO.builder()
+                .variantId(savedVariant.getProductVariantId())
+                .productId(product.getProductId())
+                .variantName(savedVariant.getProductVariantName())
+                .build();
+
     }
 }

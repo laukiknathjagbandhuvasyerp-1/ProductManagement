@@ -15,19 +15,25 @@ import lombok.NoArgsConstructor;
 public class ProductSearch {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long searchId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long searchId;
 
-    private Long variantId;
-
-    private long companyId;
+    private Long companyId;
 
     @Column(nullable = false)
-    private long productId;
+    private Long productId;
 
     private String productDetails;
 
     @Column(columnDefinition = "vector(384)")
     private float[] searchEmbedding;
+
+    @ManyToOne
+    @JoinColumn(name="variant_id",nullable = false)
+    private ProductVariant productVariant;
+
+    public Long getVariantId() {
+        return productVariant != null ? productVariant.getProductVariantId() : null;
+    }
 
 }
