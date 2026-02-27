@@ -46,6 +46,7 @@ $(document).ready(function() {
         ajax: {
             url: '${pageContext.request.contextPath}/product/ajax/search',
             dataType: 'json',
+            delay :500,
             data: function(params) {
                 return { q: params.term };
             },
