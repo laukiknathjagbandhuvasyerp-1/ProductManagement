@@ -22,7 +22,7 @@ public interface ProductSearchRepo extends JpaRepository<ProductSearch,Long> {
                                     @Param("limit") int limit);
 
     @Query(value = """
-            SELECT product_id,variant_id,product_details FROM product_search ORDER BY search_embedding <=> CAST(:embedding AS vector)
+            SELECT product_id,variant_id,product_details FROM product_search WHERE company_id = 2 AND merchant_id = 1 ORDER BY search_embedding <=> CAST(:embedding AS vector)
             LIMIT :limit """ , nativeQuery = true)
     List<Object[]> findSimilarProduct(@Param("embedding") String embedding,
                                     @Param("limit") int limit);
@@ -30,13 +30,13 @@ public interface ProductSearchRepo extends JpaRepository<ProductSearch,Long> {
     @Transactional
     @Modifying
     @Query(value = """
-DELETE FROM product_search WHERE variant_id = :variantId """,nativeQuery = true)
+        DELETE FROM product_search WHERE variant_id = :variantId """,nativeQuery = true)
     void deleteByVariantId(@Param("variantId") Long variantId);
 
     @Transactional
     @Modifying
     @Query(value = """
-DELETE FROM product_search WHERE product_id = :productId """,nativeQuery = true)
+        DELETE FROM product_search WHERE product_id = :productId """,nativeQuery = true)
     void deleteByProductId(@Param("productId") Long productId);
 
 }

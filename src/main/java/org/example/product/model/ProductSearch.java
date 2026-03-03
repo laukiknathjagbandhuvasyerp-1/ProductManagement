@@ -20,6 +20,8 @@ public class ProductSearch {
 
     private Long companyId;
 
+    private Long merchantId;
+
     @Column(nullable = false)
     private Long productId;
 
