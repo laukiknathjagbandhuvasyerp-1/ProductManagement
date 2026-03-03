@@ -25,11 +25,11 @@ public class SearchServiceImpl implements SearchService{
     private VectorSearchService vectorSearchService;
 
     @Override
-    public List<SearchResultDTO> searchAllProduct(String query) {
+    public List<SearchResultDTO> searchAllProduct(String query,Long companyId) {
 
         String vectorStr = vectorSearchService.getVectorString(query);
 
-        List<Object[]> results = productSearchRepo.findSimilarProduct(vectorStr,10);
+        List<Object[]> results = productSearchRepo.findSimilarProduct(vectorStr,companyId,10);
 
         return results.stream()
                 .map(row-> SearchResultDTO.builder()

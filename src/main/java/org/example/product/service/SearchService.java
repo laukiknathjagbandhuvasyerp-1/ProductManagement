@@ -7,6 +7,6 @@ import java.util.List;
 
 public interface SearchService {
 
-    public List<SearchResultDTO> searchAllProduct(String query);
+    public List<SearchResultDTO> searchAllProduct(String query,Long companyId);
 
 }

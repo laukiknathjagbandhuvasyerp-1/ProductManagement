@@ -37,8 +37,9 @@ public class ProductController {
 
     @GetMapping("/ajax/search")
     @ResponseBody
-    public List<SearchResultDTO> search(@RequestParam String q){
-        return searchService.searchAllProduct(q);
+    public List<SearchResultDTO> search(@RequestParam String q,
+                                        @RequestParam Long companyId){
+        return searchService.searchAllProduct(q,companyId);
     }
 
     @PostMapping("/create")

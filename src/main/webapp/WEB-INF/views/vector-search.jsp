@@ -23,6 +23,20 @@
 
 <h2>Vector Search</h2>
 
+<!-- 🔥 ADDED: Company Dropdown -->
+<label>Select Company:</label>
+<select id="companySelect">
+    <option value="">Select Company</option>
+    <option value="0">0</option>
+    <option value="1">1</option>
+    <option value="2">2</option>
+    <option value="5">5</option>
+
+</select>
+
+<br><br>
+
+<!-- 🔥 Existing Search Dropdown -->
 <select id="searchSelect" class="select2"></select>
 
 <table id="itemsTable">
@@ -46,10 +60,23 @@ $(document).ready(function() {
         ajax: {
             url: '${pageContext.request.contextPath}/product/ajax/search',
             dataType: 'json',
-            delay :500,
+            delay: 500,
+
+            // 🔥 MODIFIED: companyId pass ho raha hai ab
             data: function(params) {
-                return { q: params.term };
+
+                // 🔥 ADDED: Company select validation
+                if (!$('#companySelect').val()) {
+                    alert("Please select company first");
+                    return false;
+                }
+
+                return {
+                    q: params.term,
+                    companyId: $('#companySelect').val()   // 🔥 ADDED
+                };
             },
+
             processResults: function(data) {
                 return {
                     results: data.map(item => ({
@@ -74,7 +101,6 @@ $(document).ready(function() {
 function addRow(text, variantId, productId) {
     const tbody = $('#itemsTable tbody');
 
-    // Check duplicate
     let exists = false;
     tbody.find('tr').each(function() {
         if ($(this).data('variant-id') == variantId) exists = true;
@@ -85,9 +111,12 @@ function addRow(text, variantId, productId) {
         return;
     }
 
-    const row = $('<tr>').data('variant-id', variantId).data('product-id', productId);
+    const row = $('<tr>')
+        .data('variant-id', variantId)
+        .data('product-id', productId);
+
     row.append('<td>' + text + '</td>');
-    // 🔥 SINGLE DELETE BUTTON - Only variant delete
+
     row.append('<td>' +
         '<span class="delete" onclick="deleteItem(this, ' + variantId + ')">🗑️ Delete</span>' +
         '<span class="remove" onclick="removeItem(this)">❌ Remove</span>' +
@@ -97,7 +126,7 @@ function addRow(text, variantId, productId) {
     showToast('Added to list');
 }
 
-// 🔥 Delete variant only
+// Delete variant only
 function deleteItem(btn, variantId) {
     if (!confirm('Delete this item?')) return;
 
